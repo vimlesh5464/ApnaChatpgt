@@ -1,9 +1,9 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 from datetime import datetime
 
 from app.schemas.chat import ChatRequest
-from app.services.openai_service import get_openai_response
+from app.services.openai_service import process_message, transcribe_audio
 
 from app.models.thread import Thread
 from app.models.message import Message
@@ -58,19 +58,19 @@ async def chat(req: ChatRequest, db: Session = Depends(get_db)):
     if not req.message or not req.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
-    # ---------------- THREAD CREATE / GET ----------------
+    # 🔥 GET / CREATE THREAD
     thread = db.query(Thread).filter(Thread.thread_id == req.threadId).first()
 
     if not thread:
         thread = Thread(
             thread_id=req.threadId,
-            title=req.message
+            title=req.message[:50]
         )
         db.add(thread)
         db.commit()
         db.refresh(thread)
 
-    # ---------------- USER MESSAGE ----------------
+    # 🔥 SAVE USER MESSAGE
     user_msg = Message(
         role="user",
         content=req.message,
@@ -78,16 +78,20 @@ async def chat(req: ChatRequest, db: Session = Depends(get_db)):
     )
     db.add(user_msg)
 
-    # ---------------- AI RESPONSE (🔥 FIXED HERE) ----------------
-    try:
-        reply = await get_openai_response(req.message)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    # 🔥 FETCH HISTORY
+    messages = db.query(Message).filter(Message.thread_id == thread.id).all()
 
-    # ensure string safety
-    reply = str(reply)
+    chat_history = [
+        {"role": msg.role, "content": msg.content}
+        for msg in messages
+    ]
 
-    # ---------------- ASSISTANT MESSAGE ----------------
+    chat_history.append({"role": "user", "content": req.message})
+
+    # 🔥 AI RESPONSE ✅ FIXED
+    reply = process_message(req.message, chat_history)
+
+    # 🔥 SAVE AI MESSAGE
     assistant_msg = Message(
         role="assistant",
         content=reply,
@@ -95,9 +99,21 @@ async def chat(req: ChatRequest, db: Session = Depends(get_db)):
     )
     db.add(assistant_msg)
 
-    # ---------------- UPDATE THREAD TIME ----------------
     thread.updated_at = datetime.utcnow()
 
     db.commit()
 
     return {"reply": reply}
+
+
+# ---------------- VOICE ----------------
+@router.post("/voice")
+async def voice_chat(file: UploadFile = File(...)):
+
+    text = transcribe_audio(file)
+    reply = process_message(text)
+
+    return {
+        "transcription": text,
+        "reply": reply
+    }

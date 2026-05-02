@@ -1,13 +1,16 @@
 .settings-container {
   min-height: 100vh;
   width: 100%;
-  background: #0f172a;
   display: flex;
   justify-content: center;
   padding: 40px 20px;
   font-family: Arial, sans-serif;
+
+  /* IMPORTANT: allow theme from body */
+  background: transparent;
 }
 
+/* BOX */
 .settings-box {
   width: 500px;
   display: flex;
@@ -15,11 +18,13 @@
   gap: 20px;
 }
 
+/* TITLE */
 .settings-box h2 {
-  color: white;
   margin-bottom: 0;
+  color: inherit;
 }
 
+/* SUB TEXT */
 .sub {
   color: #94a3b8;
   margin-top: -10px;
@@ -28,16 +33,22 @@
 
 /* CARD */
 .card {
-  background: #1e293b;
   padding: 20px;
   border-radius: 12px;
-  color: white;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+
+  /* IMPORTANT: theme friendly */
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(10px);
+
+  color: inherit;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  transition: 0.3s ease;
 }
 
+/* CARD TITLE */
 .card h3 {
   margin-bottom: 15px;
-  color: #e2e8f0;
+  color: inherit;
 }
 
 /* INPUT */
@@ -47,10 +58,19 @@
   margin: 8px 0;
   border: none;
   border-radius: 8px;
+
   background: #334155;
   color: white;
+  outline: none;
 }
 
+/* LIGHT MODE INPUT FIX */
+body[data-theme="light"] .card input {
+  background: #e2e8f0;
+  color: black;
+}
+
+/* PLACEHOLDER */
 .card input::placeholder {
   color: #94a3b8;
 }
@@ -62,9 +82,11 @@
   padding: 10px;
   border: none;
   border-radius: 8px;
+
   background: #3b82f6;
   color: white;
   cursor: pointer;
+  transition: 0.3s;
 }
 
 .btn:hover {
@@ -76,23 +98,43 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #cbd5e1;
+  color: inherit;
 }
 
-/* TOGGLE */
+/* TOGGLE BUTTON */
 .toggle {
   padding: 6px 12px;
   border-radius: 8px;
   border: none;
   cursor: pointer;
+
   background: #334155;
   color: white;
+  transition: 0.3s;
 }
 
+/* STATES */
 .toggle.on {
   background: #22c55e;
 }
 
 .toggle.off {
   background: #ef4444;
+}
+
+/* LIGHT MODE CARD FIX */
+body[data-theme="light"] .card {
+  background: rgba(255, 255, 255, 0.8);
+  color: black;
+}
+
+/* BODY THEMES (backup safety) */
+body[data-theme="dark"] {
+  background-color: #0f172a;
+  color: white;
+}
+
+body[data-theme="light"] {
+  background-color: #f8fafc;
+  color: black;
 }

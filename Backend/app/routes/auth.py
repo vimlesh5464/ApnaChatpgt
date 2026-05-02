@@ -7,7 +7,7 @@ from app.services.auth_service import create_user, authenticate_user
 from app.core.security import create_access_token
 from app.models.user import User
 
-# ❌ IMPORTANT: NO PREFIX HERE
+# ✅ FIXED HERE
 router = APIRouter(tags=["Auth"])
 
 

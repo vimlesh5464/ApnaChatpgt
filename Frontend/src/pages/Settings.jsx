@@ -1,62 +1,102 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { MyContext } from "../MyContext";
+import { getSettings, saveSettings } from "../api/settingsApi";
 import "./Settings.css";
 
 function Settings() {
   const { theme, toggleTheme } = useContext(MyContext);
 
   const [profile, setProfile] = useState({
-    name: "User",
-    email: "user@gmail.com",
+    name: "",
+    email: "",
   });
 
   const [notification, setNotification] = useState(true);
+  const [loading, setLoading] = useState(false);
+
+  // ---------------- LOAD SETTINGS ----------------
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const data = await getSettings();
+
+        setProfile({
+          name: data?.name || "",
+          email: data?.email || "",
+        });
+
+        setNotification(data?.notifications ?? true);
+      } catch (err) {
+        console.log("Load settings error:", err.message);
+      }
+    };
+
+    loadSettings();
+  }, []);
+
+  // ---------------- SAVE SETTINGS ----------------
+  const handleSave = async () => {
+    setLoading(true);
+
+    try {
+      await saveSettings({
+        name: profile.name,
+        email: profile.email,
+        theme,
+        notifications: notification,
+      });
+
+      alert("Settings saved ✅");
+    } catch (err) {
+      alert(err.message);
+    }
+
+    setLoading(false);
+  };
 
   return (
     <div className="settings-container">
-
       <div className="settings-box">
 
         <h2>⚙️ Settings</h2>
-        <p className="sub">Manage your account & preferences</p>
 
-        {/* PROFILE SECTION */}
+        {/* PROFILE */}
         <div className="card">
           <h3>Profile</h3>
 
           <input
-            value={profile.name}
+            value={profile.name || ""}
             onChange={(e) =>
               setProfile({ ...profile, name: e.target.value })
             }
-            placeholder="Name"
           />
 
           <input
-            value={profile.email}
+            value={profile.email || ""}
             onChange={(e) =>
               setProfile({ ...profile, email: e.target.value })
             }
-            placeholder="Email"
           />
 
-          <button className="btn">Save Profile</button>
+          <button className="btn" onClick={handleSave} disabled={loading}>
+            {loading ? "Saving..." : "Save Profile"}
+          </button>
         </div>
 
-        {/* THEME SECTION */}
+        {/* THEME */}
         <div className="card">
           <h3>Appearance</h3>
 
           <div className="row">
-            <span>Dark Mode</span>
+            <span>Theme</span>
 
             <button className="toggle" onClick={toggleTheme}>
-              {theme === "dark" ? "ON 🌙" : "OFF ☀️"}
+              {theme === "dark" ? "🌙 Dark" : "☀️ Light"}
             </button>
           </div>
         </div>
 
-        {/* NOTIFICATION */}
+        {/* NOTIFICATIONS */}
         <div className="card">
           <h3>Notifications</h3>
 
