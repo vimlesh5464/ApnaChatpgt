@@ -20,18 +20,19 @@ function Sidebar() {
     setPrevChats,
   } = useContext(MyContext);
 
+  // ---------------- LOAD THREADS ----------------
   const loadThreads = async () => {
     try {
       const data = await getThreads();
 
-      const filtered = data.map((t) => ({
+      const formatted = data.map((t) => ({
         threadId: t.thread_id,
         title: t.title,
       }));
 
-      setAllThreads(filtered);
+      setAllThreads(formatted);
     } catch (err) {
-      console.log(err);
+      console.log("Load Threads Error:", err.message);
     }
   };
 
@@ -39,15 +40,21 @@ function Sidebar() {
     loadThreads();
   }, [currThreadId]);
 
+  // ---------------- NEW CHAT ----------------
   const createNewChat = () => {
+    const newId = uuidv1();
+
     setNewChat(true);
     setPrompt("");
     setReply(null);
-    setCurrThreadId(uuidv1());
+    setCurrThreadId(newId);
     setPrevChats([]);
   };
 
+  // ---------------- SWITCH THREAD ----------------
   const changeThread = async (threadId) => {
+    if (!threadId) return;
+
     setCurrThreadId(threadId);
 
     try {
@@ -57,28 +64,38 @@ function Sidebar() {
       setNewChat(false);
       setReply(null);
     } catch (err) {
-      console.log(err);
+      console.log("Thread Load Error:", err.message);
     }
   };
 
+  // ---------------- DELETE THREAD ----------------
   const removeThread = async (threadId) => {
+    if (!threadId) return;
+
     try {
       await deleteThread(threadId);
 
+      // remove from UI
       setAllThreads((prev) =>
         prev.filter((t) => t.threadId !== threadId)
       );
 
+      // if current thread deleted → reset state
       if (threadId === currThreadId) {
-        createNewChat();
+        setCurrThreadId(null);
+        setPrevChats([]);
+        setReply(null);
+        setNewChat(true);
       }
     } catch (err) {
-      console.log(err);
+      console.log("Delete Error:", err.message);
     }
   };
 
   return (
     <section className="sidebar">
+
+      {/* NEW CHAT BUTTON */}
       <button onClick={createNewChat}>
         <img
           src="src/assets/blacklogo.png"
@@ -90,10 +107,11 @@ function Sidebar() {
         </span>
       </button>
 
+      {/* THREAD LIST */}
       <ul className="history">
-        {allThreads?.map((thread, idx) => (
+        {allThreads?.map((thread) => (
           <li
-            key={idx}
+            key={thread.threadId}
             onClick={() => changeThread(thread.threadId)}
             className={
               thread.threadId === currThreadId ? "highlighted" : ""
@@ -112,8 +130,9 @@ function Sidebar() {
         ))}
       </ul>
 
+      {/* FOOTER */}
       <div className="sign">
-        <p>By Vimlesh Gupta &hearts;</p>
+        <p>By Vimlesh Gupta ♥</p>
       </div>
     </section>
   );

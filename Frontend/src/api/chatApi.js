@@ -4,7 +4,6 @@ const BASE_URL = "http://127.0.0.1:8000/api";
 const handleResponse = async (res) => {
   const contentType = res.headers.get("content-type");
 
-  // ❌ if request failed
   if (!res.ok) {
     let errorMessage = "Something went wrong";
 
@@ -16,10 +15,7 @@ const handleResponse = async (res) => {
     throw new Error(errorMessage);
   }
 
-  // ✅ handle empty responses (important for DELETE APIs)
-  if (res.status === 204) {
-    return null;
-  }
+  if (res.status === 204) return null;
 
   if (contentType && contentType.includes("application/json")) {
     return res.json();
@@ -30,10 +26,33 @@ const handleResponse = async (res) => {
 
 // ---------------- CHAT ----------------
 export const sendMessage = async (threadId, message) => {
+  if (!threadId || !message) {
+    throw new Error("threadId and message are required");
+  }
+
   const res = await fetch(`${BASE_URL}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ threadId, message }),
+  });
+
+  return handleResponse(res);
+};
+
+// ---------------- VOICE ----------------
+export const sendVoice = async (audioBlob) => {
+  if (!audioBlob) {
+    throw new Error("audioBlob is required");
+  }
+
+  const formData = new FormData();
+
+  // ✅ FIX: correct variable name
+  formData.append("file", audioBlob, "voice.webm");
+
+  const res = await fetch(`${BASE_URL}/voice`, {
+    method: "POST",
+    body: formData,
   });
 
   return handleResponse(res);
@@ -52,7 +71,7 @@ export const getThreadMessages = async (threadId) => {
   return handleResponse(res);
 };
 
-// ---------------- DELETE THREAD (FIXED) ----------------
+// ---------------- DELETE THREAD ----------------
 export const deleteThread = async (threadId) => {
   if (!threadId) throw new Error("threadId is required");
 

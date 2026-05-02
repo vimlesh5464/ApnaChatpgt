@@ -47,38 +47,57 @@
   margin-bottom: 20px;
 }
 
+/* 🔥 FLEX FIX */
 .inputBox {
   width: 100%;
   max-width: 700px;
-  position: relative;
   display: flex;
   align-items: center;
+  gap: 12px; /* 👈 spacing between input, send, mic */
 }
 
+/* INPUT */
 .inputBox input {
-  width: 100%;
+  flex: 1; /* 👈 important */
   border: none;
   background-color: rgba(255, 255, 255, 0.05);
   color: var(--text-color);
-  padding: 18px 45px 18px 18px;
+  padding: 16px;
   font-size: 0.9rem;
   border-radius: 14px;
   outline: none;
 }
 
-/* submit button */
+/* SEND BUTTON */
 #submit {
-  position: absolute;
-  right: 12px;
   background: transparent;
   border: none;
   cursor: pointer;
   font-size: 18px;
   color: var(--text-color);
+  padding: 10px;
+  border-radius: 10px;
+  transition: 0.2s;
 }
 
-#submit i:hover {
-  color: var(--accent);
+#submit:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* MIC BUTTON */
+.micBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--text-color);
+  padding: 10px;
+  border-radius: 10px;
+  transition: 0.2s;
+}
+
+.micBtn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* INFO */

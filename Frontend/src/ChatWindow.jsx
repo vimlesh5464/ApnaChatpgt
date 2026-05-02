@@ -3,7 +3,7 @@ import Chat from "./Chat.jsx";
 import { MyContext } from "./MyContext.jsx";
 import { useContext, useState, useRef, useEffect } from "react";
 import { ScaleLoader } from "react-spinners";
-import { sendMessage } from "./api/chatApi";
+import { sendMessage, sendVoice } from "./api/chatApi";
 import { useNavigate } from "react-router-dom";
 
 function ChatWindow() {
@@ -20,11 +20,13 @@ function ChatWindow() {
 
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [recording, setRecording] = useState(false);
 
   const menuRef = useRef(null);
+  const chunksRef = useRef([]);
   const navigate = useNavigate();
 
-  // close dropdown on outside click
+  // ---------------- CLOSE DROPDOWN ----------------
   useEffect(() => {
     const handleClick = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -36,7 +38,7 @@ function ChatWindow() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // 💬 CHAT FUNCTION
+  // ---------------- CHAT ----------------
   const getReply = async () => {
     if (!prompt.trim()) return;
 
@@ -56,13 +58,81 @@ function ChatWindow() {
 
       setPrompt("");
     } catch (err) {
-      console.log("Error:", err);
+      console.log("Chat Error:", err.message);
     }
 
     setLoading(false);
   };
 
-  // 🚪 LOGOUT
+  // ---------------- VOICE ----------------
+  const startRecording = async () => {
+    try {
+      setRecording(true);
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+
+      chunksRef.current = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          chunksRef.current.push(e.data);
+        }
+      };
+
+      recorder.onstop = async () => {
+        try {
+          if (chunksRef.current.length === 0) {
+            console.log("No audio recorded");
+            return;
+          }
+
+          setLoading(true);
+
+          // 🔥 AUDIO BLOB
+          const audioBlob = new Blob(chunksRef.current, {
+            type: "audio/webm", // or "audio/wav"
+          });
+
+          // 🔥 STOP MIC
+          stream.getTracks().forEach((track) => track.stop());
+
+          const data = await sendVoice(audioBlob);
+
+          setReply(data.reply);
+
+          setPrevChats((prev) => [
+            ...prev,
+            { role: "user", content: data.transcription },
+            { role: "assistant", content: data.reply },
+          ]);
+
+          setPrompt("");
+        } catch (err) {
+          console.log("Voice Error:", err.message);
+        } finally {
+          setLoading(false);
+          setRecording(false);
+          chunksRef.current = [];
+        }
+      };
+
+      recorder.start();
+
+      // ⏱️ AUTO STOP (4 sec)
+      setTimeout(() => {
+        if (recorder.state !== "inactive") {
+          recorder.stop();
+        }
+      }, 4000);
+
+    } catch (err) {
+      console.log("Mic Error:", err.message);
+      setRecording(false);
+    }
+  };
+
+  // ---------------- LOGOUT ----------------
   const handleLogout = () => {
     setIsOpen(false);
     localStorage.removeItem("token");
@@ -83,13 +153,13 @@ function ChatWindow() {
         </span>
 
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-
-          {/* THEME TOGGLE */}
+          
+          {/* THEME */}
           <button className="themeToggleBtn" onClick={toggleTheme}>
             {theme === "dark" ? "🌙 Dark" : "☀️ Light"}
           </button>
 
-          {/* USER ICON */}
+          {/* USER */}
           <div className="userIconDiv" onClick={() => setIsOpen(!isOpen)}>
             <span className="userIcon">
               <i className="fa-solid fa-user"></i>
@@ -124,18 +194,29 @@ function ChatWindow() {
 
       {/* INPUT */}
       <div className="chatInput">
-
         <div className="inputBox">
 
           <input
             value={prompt}
+            disabled={loading}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && getReply()}
             placeholder="Ask anything..."
           />
 
-          <button id="submit" onClick={getReply}>
+          {/* SEND */}
+          <button id="submit" onClick={getReply} disabled={loading}>
             <i className="fa-solid fa-paper-plane"></i>
+          </button>
+
+          {/* 🎤 VOICE */}
+          <button
+            className="micBtn"
+            onClick={startRecording}
+            disabled={loading || recording}
+            title="Speak"
+          >
+            {recording ? "🎙️ Recording..." : "🎤"}
           </button>
 
         </div>
@@ -143,7 +224,6 @@ function ChatWindow() {
         <p className="info">
           SigmaGPT can make mistakes. Check important info.
         </p>
-
       </div>
 
     </div>
