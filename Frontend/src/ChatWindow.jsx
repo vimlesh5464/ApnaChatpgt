@@ -1,9 +1,10 @@
 import "./ChatWindow.css";
 import Chat from "./Chat.jsx";
 import { MyContext } from "./MyContext.jsx";
-import { useContext, useState } from "react";
+import { useContext, useState, useRef, useEffect } from "react";
 import { ScaleLoader } from "react-spinners";
 import { sendMessage } from "./api/chatApi";
+import { useNavigate } from "react-router-dom";
 
 function ChatWindow() {
   const {
@@ -13,13 +14,31 @@ function ChatWindow() {
     currThreadId,
     setPrevChats,
     setNewChat,
+    theme,
+    toggleTheme,
   } = useContext(MyContext);
 
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
+  const menuRef = useRef(null);
+  const navigate = useNavigate();
+
+  // close dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // 💬 CHAT FUNCTION
   const getReply = async () => {
-    if (!prompt) return;
+    if (!prompt.trim()) return;
 
     setLoading(true);
     setNewChat(false);
@@ -29,7 +48,6 @@ function ChatWindow() {
 
       setReply(data.reply);
 
-      // sync UI immediately
       setPrevChats((prev) => [
         ...prev,
         { role: "user", content: prompt },
@@ -38,66 +56,96 @@ function ChatWindow() {
 
       setPrompt("");
     } catch (err) {
-      console.log(err);
+      console.log("Error:", err);
     }
 
     setLoading(false);
   };
 
-  const handleProfileClick = () => {
-    setIsOpen(!isOpen);
+  // 🚪 LOGOUT
+  const handleLogout = () => {
+    setIsOpen(false);
+    localStorage.removeItem("token");
+    setPrompt("");
+    setReply(null);
+    setPrevChats([]);
+    setNewChat(true);
+    navigate("/login");
   };
 
   return (
     <div className="chatWindow">
+
+      {/* NAVBAR */}
       <div className="navbar">
         <span>
           SigmaGPT <i className="fa-solid fa-chevron-down"></i>
         </span>
 
-        <div className="userIconDiv" onClick={handleProfileClick}>
-          <span className="userIcon">
-            <i className="fa-solid fa-user"></i>
-          </span>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+
+          {/* THEME TOGGLE */}
+          <button className="themeToggleBtn" onClick={toggleTheme}>
+            {theme === "dark" ? "🌙 Dark" : "☀️ Light"}
+          </button>
+
+          {/* USER ICON */}
+          <div className="userIconDiv" onClick={() => setIsOpen(!isOpen)}>
+            <span className="userIcon">
+              <i className="fa-solid fa-user"></i>
+            </span>
+          </div>
+
         </div>
       </div>
 
+      {/* DROPDOWN */}
       {isOpen && (
-        <div className="dropDown">
-          <div className="dropDownItem">
+        <div className="dropDown" ref={menuRef}>
+          <div className="dropDownItem" onClick={() => navigate("/settings")}>
             <i className="fa-solid fa-gear"></i> Settings
           </div>
-          <div className="dropDownItem">
-            <i className="fa-solid fa-cloud-arrow-up"></i> Upgrade plan
+
+          <div className="dropDownItem" onClick={() => navigate("/upgrade")}>
+            <i className="fa-solid fa-cloud-arrow-up"></i> Upgrade Plan
           </div>
-          <div className="dropDownItem">
-            <i className="fa-solid fa-arrow-right-from-bracket"></i> Log out
+
+          <div className="dropDownItem danger" onClick={handleLogout}>
+            <i className="fa-solid fa-arrow-right-from-bracket"></i> Logout
           </div>
         </div>
       )}
 
+      {/* CHAT */}
       <Chat />
 
+      {/* LOADER */}
       <ScaleLoader color="#fff" loading={loading} />
 
+      {/* INPUT */}
       <div className="chatInput">
+
         <div className="inputBox">
+
           <input
-            placeholder="Ask anything"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && getReply()}
+            placeholder="Ask anything..."
           />
 
-          <div id="submit" onClick={getReply}>
+          <button id="submit" onClick={getReply}>
             <i className="fa-solid fa-paper-plane"></i>
-          </div>
+          </button>
+
         </div>
 
         <p className="info">
           SigmaGPT can make mistakes. Check important info.
         </p>
+
       </div>
+
     </div>
   );
 }

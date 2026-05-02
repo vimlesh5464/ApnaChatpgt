@@ -1,0 +1,98 @@
+.settings-container {
+  min-height: 100vh;
+  width: 100%;
+  background: #0f172a;
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+  font-family: Arial, sans-serif;
+}
+
+.settings-box {
+  width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.settings-box h2 {
+  color: white;
+  margin-bottom: 0;
+}
+
+.sub {
+  color: #94a3b8;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
+
+/* CARD */
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.card h3 {
+  margin-bottom: 15px;
+  color: #e2e8f0;
+}
+
+/* INPUT */
+.card input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: none;
+  border-radius: 8px;
+  background: #334155;
+  color: white;
+}
+
+.card input::placeholder {
+  color: #94a3b8;
+}
+
+/* BUTTON */
+.btn {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #3b82f6;
+  color: white;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #2563eb;
+}
+
+/* ROW */
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #cbd5e1;
+}
+
+/* TOGGLE */
+.toggle {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #334155;
+  color: white;
+}
+
+.toggle.on {
+  background: #22c55e;
+}
+
+.toggle.off {
+  background: #ef4444;
+}

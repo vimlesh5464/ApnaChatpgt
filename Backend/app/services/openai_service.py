@@ -15,3 +15,4 @@ async def get_openai_response(message: str):
 
     return response.choices[0].message.content
 
+

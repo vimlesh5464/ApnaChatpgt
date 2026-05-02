@@ -1,0 +1,90 @@
+.upgrade-container {
+  min-height: 100vh;
+  background: #0f172a;
+  color: white;
+  text-align: center;
+  padding: 40px 20px;
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  margin-bottom: 10px;
+}
+
+.sub {
+  color: #94a3b8;
+  margin-bottom: 40px;
+}
+
+/* PLANS */
+.plans {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* CARD */
+.plan-card {
+  background: #1e293b;
+  width: 280px;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  transition: 0.3s;
+}
+
+.plan-card:hover {
+  transform: translateY(-5px);
+}
+
+/* TEXT */
+.plan-card h2 {
+  margin-bottom: 10px;
+}
+
+.plan-card h3 {
+  color: #38bdf8;
+  margin-bottom: 15px;
+}
+
+/* LIST */
+.plan-card ul {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+}
+
+.plan-card li {
+  margin: 8px 0;
+  color: #cbd5e1;
+}
+
+/* BUTTON */
+.btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: #3b82f6;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  background: #2563eb;
+}
+
+/* DISABLED */
+.disabled-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: gray;
+  color: #ddd;
+  cursor: not-allowed;
+}
