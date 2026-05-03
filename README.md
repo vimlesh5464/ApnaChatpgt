@@ -131,6 +131,7 @@ User prompt handling
 User settings stored per account
 Synced between frontend and backend
 Includes profile, theme, notifications
+
 ⚠️ Known Improvements (Shows Engineering Maturity)
 Add WebSockets for real-time streaming chat
 Add Redis caching for faster responses
